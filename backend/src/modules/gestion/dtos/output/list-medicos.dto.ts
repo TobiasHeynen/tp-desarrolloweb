@@ -1,5 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import {@ApiProperty} from"../../enums/estado-medico.enum.js"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ListMedicosDto {
 
@@ -7,12 +6,14 @@ export class ListMedicosDto {
     id: number;
 
     @ApiProperty()
-    id_usuario: number;
+    apellidos: string;
+
+    @ApiProperty()
+    nombres: string;
 
     @ApiProperty()
     matricula: number;
 
     @ApiProperty()
-    valor_consulta: number;
-
+    valorConsulta: number;
 }

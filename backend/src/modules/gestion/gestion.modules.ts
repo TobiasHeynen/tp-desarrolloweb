@@ -1,29 +1,19 @@
-import {Module} from '@nestjs/common';
-import { AdministradorController } from './controllers/administrador.controllers.js';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { MedicosController } from './controllers/medicos.controllers.js';
 import { PacientesController } from './controllers/pacientes.controllers.js';
-import {TypeOrmModule} from '@nestjs/typeorm';
-import {Usuarios} from './entities/usuarios.entity.js';
-import {Medicos} from './entities/medicos.entity.js';
-import {Paciente} from './entities/paciente.entity.js';
+import { ReservasController } from './controllers/reservas.controllers.js';
+import { Medico } from './entities/medicos.entity.js';
+import { Reserva } from './entities/reservas.entity.js';
+import { Usuario } from './entities/usuarios.entity.js';
+import { MedicosService } from './services/medicos.service.js';
+import { PacientesService } from './services/pacientes.service.js';
 import { ReservasService } from './services/reservas.service.js';
-import { PacienteService } from './services/pacientes.service.js';
 
 @Module({
-    controllers: [AdministradorController, MedicosController, PacientesController],
-    imports: [TypeOrmModule.forFeature({Usuarios, Medicos, Paciente})],
-    providers: [ReservasService,
-    PacienteService,
-    {
-        provide: 'ADMINISTRADOR_SERVICE',
-        useExisting: AdministradorService
-
-    },{
-        provide: 'PACIENTE_SERVICE',
-        useExisting: PacienteService
-    }],
-    exports: []
+    controllers: [ReservasController, MedicosController, PacientesController],
+    imports: [TypeOrmModule.forFeature([Usuario, Medico, Reserva])],
+    providers: [ReservasService, MedicosService, PacientesService],
+    exports: [],
 })
-export class GestionModule {
-    
-}
+export class GestionModule {}
