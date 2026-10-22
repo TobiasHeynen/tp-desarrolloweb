@@ -1,115 +1,204 @@
-# Tp-final-clinica-uner
+# Clínica UNER - Sistema de turnos
 
-Trabajo final del proyecto de clinica para la materia de desarrollo de aplicaciones web
+Trabajo Final Integrador de Desarrollo de Aplicaciones Web 2026 (Tecnicatura Universitaria en Desarrollo Web, UNER).
 
+Sistema web para reservar turnos de una clínica con médicos clínicos. Hay tres roles:
 
+- **Paciente:** reserva turnos, ve sus turnos y los cancela (hasta el día anterior).
+- **Médico:** ve sus turnos de una fecha y los marca como atendido o ausente.
+- **Administrador:** reserva, lista (con filtros) y cancela turnos (hasta que empieza la consulta), y modifica el valor de la consulta de cada médico.
 
-Integrantes: Heynen Tobias Torres Nancy Graciela Troillan Romina Ileana Paula F. Solis Cristian Sambrana
+## Integrantes
 
+- Heynen Tobias
+- Torres Nancy Graciela
+- Troillan Romina Ileana
+- Paula F. Solis
+- Cristian Sambrana
 
-# Reparto de tareas: TP Final Clínica UNER
+## Tecnologías
 
-## Estado actual (base ya hecha)
+| Parte | Tecnología |
+|---|---|
+| Backend | NestJS + TypeORM |
+| Base de datos | PostgreSQL |
+| Frontend | Angular |
+| Servidor web / proxy | nginx |
+| Gestor de procesos | PM2 |
+| Documentación | Swagger + Compodoc |
 
-El backend compila y levanta. Ya tiene:
+## Estructura
 
-- Entidades `Usuario`, `Medico` y `Reserva` según el modelo de la consigna. **No hay tabla de pacientes:** un paciente es un usuario con `rol = PACIENTE`.
-- `db/schema.sql` crea los enums, las tablas y un índice único que impide que un médico tenga dos turnos activos en el mismo horario.
-- `.env.example` con todas las variables. Para usarlo, copialo a `.env`.
-- Los DTOs de entrada y salida y los endpoints ya están definidos. Los métodos de los services tiran `NotImplementedException`: **cada uno completa los suyos**.
-- Swagger corre en `http://localhost:3000/api/docs` si `SWAGGER_HABILITADO=true`.
+```
+.
+├── backend/               API NestJS
+│   ├── db/schema.sql      tablas y enums de la base
+│   ├── src/
+│   └── .env.example
+├── frontend/              app Angular
+├── nginx/clinica.conf     configuración de nginx
+├── ecosystem.config.cjs   configuración de PM2
+└── docs/                  guion del video
+```
 
-Para levantar el backend:
+## Requisitos
+
+- Node.js 22 o superior
+- PostgreSQL 16 o superior
+- PM2: `npm install -g pm2`
+- nginx ([descarga para Windows](https://nginx.org/en/download.html) o `apt install nginx` en Linux)
+- Angular CLI: `npm install -g @angular/cli`
+
+## Base de datos
+
+```bash
+psql -U postgres -c "CREATE DATABASE clinica"
+psql -U postgres -d clinica -f backend/db/schema.sql
+psql -U postgres -d clinica -f backend/db/seed.sql
+```
+
+### Usuarios de prueba
+
+Se cargan con `backend/db/seed.sql`.
+
+| Rol | Documento | Clave |
+|---|---|---|
+| Administrador | _a completar_ | _a completar_ |
+| Médico | _a completar_ | _a completar_ |
+| Paciente | _a completar_ | _a completar_ |
+| Usuario dado de baja (no puede entrar) | _a completar_ | _a completar_ |
+
+## Variables de entorno
+
+El backend lee la configuración del archivo `backend/.env`. Para crearlo, copiá el ejemplo y completá los datos:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+| Variable | Para qué sirve |
+|---|---|
+| `PORT` | Puerto del backend (3000 por defecto) |
+| `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` | Conexión a PostgreSQL |
+| `DB_LOGGING` | `true` muestra las consultas SQL en consola |
+| `SWAGGER_HABILITADO` | `true` habilita Swagger en `/api/docs` |
+| `JWT_SECRET`, `JWT_EXPIRES_IN` | Firma y duración del token de login |
+
+## Desarrollo
+
+Backend (queda en `http://localhost:3000`):
 
 ```bash
 cd backend
 npm install
-cp .env.example .env            # ajustar credenciales de Postgres
-psql -U postgres -c "create database clinica"
-psql -U postgres -d clinica -f db/schema.sql
 npm run start:dev
 ```
 
-## Contrato de la API (prefijo `/api/v1`)
+Frontend (queda en `http://localhost:4200`):
 
-Las dos partes trabajan contra este contrato, así el front no espera al back y viceversa.
+```bash
+cd frontend
+npm install
+npm start
+```
 
-| Método | Ruta | Rol | Body / Query | Respuesta |
-|---|---|---|---|---|
-| POST | `/auth/login` | público | `{ documento, clave }` | `{ accessToken }` |
-| GET | `/medicos` | todos | | `ListMedicosDto[]` |
-| GET | `/medicos/:id/horarios-disponibles` | PACIENTE, ADMIN | `?fecha=YYYY-MM-DD` | `string[]` (`["08:00","09:00"]`) |
-| PATCH | `/medicos/:id/valor-consulta` | ADMIN | `{ valorConsulta }` | |
-| GET | `/pacientes` | ADMIN | | `UsuarioResumenDto[]` |
-| POST | `/reservas` | PACIENTE, ADMIN | `{ idMedico, fechaHora, idPaciente? }` | `ListReservasDto` |
-| GET | `/reservas` | todos | `?fecha&idMedico&idPaciente&estado` | `ListReservasDto[]` |
-| PATCH | `/reservas/:id/cancelar` | PACIENTE, ADMIN | | |
-| PATCH | `/reservas/:id/estado` | MEDICO | `{ estado: ATENDIDO \| AUSENTE }` | |
+En desarrollo, el frontend usa un proxy (`frontend/proxy.conf.json`) que manda todo lo que empieza con `/api` al backend. Por eso todas las llamadas se hacen con rutas relativas (`/api/v1/...`).
 
-El payload del JWT es `{ sub: idUsuario, rol, idMedico? }`. `idMedico` solo viene si el rol es MEDICO.
+## Producción con nginx y PM2
 
-## Reglas de negocio acordadas
+### 1. Compilar
 
-- Se atiende de lunes a viernes. El primer turno es a las 8:00 y el último a las 15:00, y cada turno dura 1 hora en punto.
-- No se puede reservar un horario ocupado del **mismo médico**. Tampoco puede un **mismo paciente** tener dos turnos a la misma hora, aunque sean con médicos distintos.
-- No se puede reservar en el pasado ni con más de 30 días de anticipación.
-- `valor_consulta` se copia del médico al reservar, y si después cambia el precio, la reserva no se modifica.
-- El PACIENTE cancela sus propios turnos hasta las 23:59 del día anterior. El ADMIN puede cancelar hasta la hora de inicio.
-- El MEDICO solo marca sus propios turnos, y solo si están en estado `ACTIVO`.
-- Solo pueden loguearse los usuarios en estado `ACTIVO`.
+```bash
+cd backend
+npm install
+npm run build
 
----
+cd ../frontend
+npm install
+npm run build
+```
 
-## Persona 1: Tobias. Infraestructura y documentación (independiente)
+### 2. Levantar el backend con PM2
 
-Nada de esto depende de los demás. Se puede probar con el backend actual, que ya levanta, y con cualquier build de Angular, aunque sea la app vacía.
+Desde la raíz del repositorio:
 
-- [ ] **PM2:** armar `ecosystem.config.cjs` en la raíz que levante `backend/dist/main.js` con `env_production`, y documentar `npm run build` + `pm2 start ecosystem.config.cjs` + `pm2 logs`/`pm2 status`.
-- [ ] **nginx:** armar `nginx/clinica.conf`. Tiene que servir el build de Angular (`frontend/dist/.../browser`) con `try_files $uri $uri/ /index.html` para que funcionen las rutas del SPA, y hacer `proxy_pass` de `/api/` a `http://localhost:3000`.
-- [ ] **Compodoc:** instalar `@compodoc/compodoc` como devDependency en el backend (ya existe el script `npm run compodoc`) y en el frontend cuando exista. Verificar que genera la carpeta `documentation`.
-- [ ] **README** de la raíz: requisitos (Node, Postgres, nginx, PM2), cómo levantar todo en dev y en "producción" (nginx + PM2), y usuarios de prueba (los toma de la persona 2).
-- [ ] **Guion del video** (8 a 12 min): qué muestra cada uno y en qué orden. Recordá que nginx y PM2 tienen que verse funcionando.
+```bash
+pm2 start ecosystem.config.cjs --env production
+pm2 status                 # ver que clinica-backend esté "online"
+pm2 logs clinica-backend   # ver los logs
+pm2 restart clinica-backend
+pm2 stop clinica-backend
+```
 
-## Persona 2: Auth, seguridad y endpoints chicos
+PM2 corre `backend/dist/main.js` dentro de la carpeta `backend`, así que toma el `.env` de ahí. Los logs quedan en `backend/logs/`.
 
-- [ ] `db/seed.sql` con 1 admin, 2 médicos (con su fila en `medicos`), 3 pacientes y 1 usuario en `BAJA`, todos con la clave hasheada con bcrypt. **Pasarlo pronto**, porque todos lo necesitan para probar.
-- [ ] `AuthService.login`: buscar por `documento`, verificar `estado = ACTIVO`, comparar con `bcrypt.compare` y firmar el JWT con `JWT_SECRET`/`JWT_EXPIRES_IN` desde ConfigService. Ante cualquier error, devolver `401` con un mensaje genérico.
-- [ ] `JwtAuthGuard`, `RolesGuard`, el decorador `@Roles(...)` y el decorador `@UsuarioActual()`, que devuelve el payload del token. **Prioridad alta**, porque la persona 3 los usa.
-- [ ] Aplicar los guards en los 3 controllers según la columna "Rol" del contrato.
-- [ ] `MedicosService`: `listarMedicos` (join con usuario para nombre y apellido) y `actualizarValorConsulta`, que no toca las reservas existentes.
-- [ ] `PacientesService.listarPacientes`: usuarios con rol PACIENTE y estado ACTIVO, sin exponer la clave.
+### 3. Configurar nginx
 
-## Persona 3: Reservas, el núcleo del negocio
+`nginx/clinica.conf` hace dos cosas:
 
-Hasta que estén los guards de la persona 2, podés hardcodear un usuario de prueba y después reemplazarlo por `@UsuarioActual()`.
+- sirve el build de Angular, y devuelve `index.html` en cualquier ruta del front para que funcione la navegación;
+- reenvía `/api/` al backend en `http://127.0.0.1:3000`.
 
-- [ ] `crearReserva`: validar todas las reglas de arriba (día hábil, hora en punto entre 8 y 15, rango de 30 días, médico existente, horario libre para el médico y para el paciente) y congelar `valorConsulta`. Si el que reserva es PACIENTE, `idPaciente` sale del token; si es ADMIN, viene en el body.
-- [ ] `listarReservas`: el PACIENTE ve solo las suyas, el MEDICO solo las suyas, y el ADMIN ve todas y puede aplicar los filtros. El mapeo a `ListReservasDto` se hace sin exponer la clave del paciente.
-- [ ] `cancelarReserva`: aplicar la regla de tiempo según el rol, que el paciente solo pueda cancelar las suyas, y que solo se cancelen reservas `ACTIVO`.
-- [ ] `cambiarEstado`: solo el médico dueño del turno, y solo sobre reservas `ACTIVO`.
-- [ ] `horariosDisponibles`: devolver los slots de 08:00 a 15:00 de esa fecha que no estén ocupados para ese médico, y ninguno si es fin de semana o está fuera del rango permitido.
-- [ ] Ojo con las zonas horarias: la columna es `timestamp` sin zona. Hay que acordar que siempre se guarda la hora local de Argentina y no mezclar con `toISOString()`.
+Antes de usarlo, cambiá la línea `root` por la ruta absoluta a `frontend/dist/frontend/browser` de tu máquina.
 
-## Persona 4: Frontend base + pantallas de paciente
+**Windows:** copiá el bloque `server { ... }` de `nginx/clinica.conf` dentro del bloque `http { ... }` de `C:\nginx\conf\nginx.conf` (o donde lo hayas descomprimido). Las rutas van con `/`, por ejemplo `root E:/Facultad/clinica/frontend/dist/frontend/browser;`. Después:
 
-- [ ] Crear el proyecto Angular en `frontend/`.
-- [ ] Crear `proxy.conf.json` con `/api` → `http://localhost:3000`, configurado en `angular.json`. **Todas las llamadas con rutas relativas** (`/api/v1/...`), nunca `http://localhost:3000`.
-- [ ] Login (documento + clave), un `AuthService` que guarde el token, un interceptor que mande el `Authorization: Bearer`, guards de ruta por rol, y un layout con menú según el rol.
-- [ ] **Subir la base pronto**, así la persona 5 trabaja arriba.
-- [ ] Pantallas de paciente: reservar turno (elegir médico, después fecha, después horario disponible, con el precio a la vista), mis turnos, y cancelar.
+```powershell
+cd C:\nginx
+.\nginx.exe -t          # verifica la configuración
+start nginx             # inicia
+.\nginx.exe -s reload   # recarga después de cambiar la config
+.\nginx.exe -s stop     # detiene
+```
 
-## Persona 5: Frontend de médico y administrador
+**Linux:**
 
-Arranca con la base de la persona 4. Mientras tanto puede maquetar los componentes sueltos.
+```bash
+sudo cp nginx/clinica.conf /etc/nginx/conf.d/clinica.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
-- [ ] Médico: agenda por fecha (selector de fecha y listado de sus turnos) y botones "Atendido" y "Ausente".
-- [ ] Admin: listado de turnos con filtros (médico, paciente, fecha, estado), cancelar, y reservar para un paciente (elige el paciente de `/pacientes`).
-- [ ] Admin: pantalla de médicos con edición del valor de la consulta.
-- [ ] Manejo de errores: mostrar el mensaje del backend cuando una regla no se cumple.
+La aplicación queda en `http://localhost:8080`.
 
----
+## Documentación
 
-## Dependencias entre tareas
+- **Swagger:** con `SWAGGER_HABILITADO=true`, entrar a `http://localhost:3000/api/docs` (o `http://localhost:8080/api/docs` a través de nginx).
+- **Compodoc:**
 
-- **Persona 2 → todos:** el seed y los guards. Conviene que salgan primero.
-- **Persona 4 → persona 5:** la base de Angular (login, interceptor, layout).
+```bash
+cd backend
+npm run compodoc          # genera backend/documentation
+npm run compodoc:serve    # genera y la sirve en http://localhost:8081
+```
+
+En el frontend, los mismos scripts se agregan en `frontend/package.json` y generan `frontend/documentation`.
+
+## API
+
+Todas las rutas tienen el prefijo `/api/v1`.
+
+| Método | Ruta | Rol |
+|---|---|---|
+| POST | `/auth/login` | público |
+| GET | `/medicos` | todos |
+| GET | `/medicos/:id/horarios-disponibles?fecha=YYYY-MM-DD` | paciente, administrador |
+| PATCH | `/medicos/:id/valor-consulta` | administrador |
+| GET | `/pacientes` | administrador |
+| POST | `/reservas` | paciente, administrador |
+| GET | `/reservas?fecha&idMedico&idPaciente&estado` | todos |
+| PATCH | `/reservas/:id/cancelar` | paciente, administrador |
+| PATCH | `/reservas/:id/estado` | médico |
+
+El detalle de cada endpoint está en Swagger.
+
+## Reglas de negocio
+
+- Se atiende de lunes a viernes de 8 a 16 hs. Los turnos duran una hora, y el último es a las 15 hs.
+- No se puede reservar un horario que ya está ocupado para ese médico, ni darle a un paciente dos turnos a la misma hora.
+- Se puede reservar con hasta 30 días de anticipación.
+- El valor de la consulta se guarda al reservar y no cambia aunque después se modifique el precio del médico.
+- Solo pueden iniciar sesión los usuarios en estado `ACTIVO`.
+
+El reparto de tareas del grupo está en [TAREAS.md](TAREAS.md).
