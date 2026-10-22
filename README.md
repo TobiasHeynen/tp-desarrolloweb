@@ -37,8 +37,7 @@ Sistema web para reservar turnos de una clínica con médicos clínicos. Hay tre
 │   └── .env.example
 ├── frontend/              app Angular
 ├── nginx/clinica.conf     configuración de nginx
-├── ecosystem.config.cjs   configuración de PM2
-└── docs/                  guion del video
+└── ecosystem.config.cjs   configuración de PM2
 ```
 
 ## Requisitos

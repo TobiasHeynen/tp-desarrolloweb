@@ -59,7 +59,7 @@ Nada de esto depende de los demás. Se puede probar con el backend actual, que y
 - [x] **nginx:** armar `nginx/clinica.conf`. Tiene que servir el build de Angular (`frontend/dist/.../browser`) con `try_files $uri $uri/ /index.html` para que funcionen las rutas del SPA, y hacer `proxy_pass` de `/api/` a `http://localhost:3000`.
 - [x] **Compodoc:** instalar `@compodoc/compodoc` como devDependency en el backend (ya existe el script `npm run compodoc`) y en el frontend cuando exista. Verificar que genera la carpeta `documentation`.
 - [x] **README** de la raíz: requisitos (Node, Postgres, nginx, PM2), cómo levantar todo en dev y en "producción" (nginx + PM2), y usuarios de prueba (los toma de la persona 2).
-- [x] **Guion del video** (8 a 12 min): qué muestra cada uno y en qué orden. Recordá que nginx y PM2 tienen que verse funcionando.
+- [x] **Guion del video** (fuera del repo) (8 a 12 min): qué muestra cada uno y en qué orden. Recordá que nginx y PM2 tienen que verse funcionando.
 
 ## Persona 2: Auth, seguridad y endpoints chicos
 
