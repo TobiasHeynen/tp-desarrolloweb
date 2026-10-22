@@ -1,55 +1,16 @@
-import { Injectable } from "@nestjs/common/decorators/core/injectable.decorator";
-import { FindOptionsWhere, Repository } from 'typeorm';
-import { ListPacientesDto } from "../dtos/output/list-pacientes.dto.js";
-import { BadRequestException, forwardRef, Inject } from "@nestjs/common";
-import { AdministradorService } from './administrador.service.js';
-import { CreatePacientesDto } from "../dtos/input/create-pacientes.dto.js";
-import { EstadosPacientesEnum } from '../enums/estados-pacientes.enum.js';
-import { UpdatePacientesDto } from '../dtos/input/update-pacientes.dto.js';
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from "@nestjs/swagger";
+import { Injectable, NotImplementedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Usuario } from '../entities/usuarios.entity.js';
+import { UsuarioResumenDto } from '../dtos/output/usuario-resumen.dto.js';
 
-
+// Los pacientes son usuarios con rol PACIENTE. Solo lectura: el ABM de usuarios no es parte del TP.
 @Injectable()
-export class PacienteService {
+export class PacientesService {
 
-    constructor(@InjectRepository(Paciente) private readonly repository: Repository<PacienteService>() {
-        @Inject(forwardRef( ()=> 'ADMINISTRADOR_SERVICE')) private readonly AdministradorService() 
-            
-        }
-    async crearPaciente(dto: CreatePacientesDto): Promise<( id: number )> {
+    constructor(@InjectRepository(Usuario) private readonly repository: Repository<Usuario>) {}
 
-        const paciente: Paciente = this.repository.create(dto);
-        paciente.estado = EstadosPacientesEnum.ACTIVO;
-        await this.repository.save(paciente);
-        return {id: paciente.id};
+    async listarPacientes(): Promise<UsuarioResumenDto[]> {
+        throw new NotImplementedException();
     }
-    
-    async editarPaciente(id: number, dto: UpdatePacienteDto):Promise<void>{
-        const paciente: Paciente | null = await this.repository.findOneBy({ id })
-    
-    };
-
-        if (!paciente){
-        throw new BadRequestException('Paciente inexistente');
-
 }
-    const relacionadoConAdministrador: boolean = await this.administradorService.existeAdministradorPorIdPaciente(id);
-
-    if(relacionadoConAdministrador && dot.estado === EstadosPacientesEnum.BAJA)(
-        throw new BadRequestException('No se puede dar de baja un paciente con turnos relacionados ');
-    )
-
-        this.repository.merge(paciente, dto);
-    
-        await this.repository.save(paciente);
-
-    
-    @ApiProperty( ( enum: EstadosPacientesEnum, example: EstadosPacientesEnum.ACTIVO ))
-    @IsEnum(EstadosPacientesEnum)
-    @IsNotEnpty()
-    estado!: EstadosPacientesEnum;
-
-}
-
-

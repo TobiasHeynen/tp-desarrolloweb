@@ -1,49 +1,38 @@
-import { Injectable } from  @nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Reserva } from '../entities/reservas.entities.ts';
-import { Repository} from 'typeorm';
-import { CreateAdministradorDto } from '../dtos/input/create-administrador.dto.js';
-import { EstadosReservasEnum } from '../enums/estados-reservas.enum.js';
-import { UpdateAdministradorDto } from '../dtos/input/update-administrador.dto.js';
-import { BadRequestException } from '@nestjs/common';
-
-
+import { Repository } from 'typeorm';
+import { Reserva } from '../entities/reservas.entity.js';
+import { Medico } from '../entities/medicos.entity.js';
+import { CreateReservaDto } from '../dtos/input/create-reserva.dto.js';
+import { FiltrosReservasDto } from '../dtos/input/filtros-reservas.dto.js';
+import { UpdateEstadoReservaDto } from '../dtos/input/update-estado-reserva.dto.js';
+import { ListReservasDto } from '../dtos/output/list-reservas.dto.js';
 
 @Injectable()
-export class ReservasService{
+export class ReservasService {
 
-    constructor (@InjectRepository(Reserva)private  readonly repository: Repository<Reserva>){
+    constructor(
+        @InjectRepository(Reserva) private readonly repository: Repository<Reserva>,
+        @InjectRepository(Medico) private readonly medicosRepository: Repository<Medico>,
+    ) {}
 
-    }
-    async crearReserva(idAdministrador: number, dto: CreateAdministradorDto):Promise<{id:number}>{
-        const reserva: Reserva = this.repository.create()
-
-        reserva.estado = EstadosReservasEnum.PENDIENTE
-
-        reserva.idAdministador = idAdministrador
-
-        await this.repository.save(reserva);
-
-        return {id: reserva.id}
-    }
-    async editarReserva(idReserva: number, dto: UpdateAdministradorDto):Promise<void>{
-
-        const reserva: Reserva | null = await this.repository.findOne({
-            where: {
-                id: idReserva
-
-            }
-
-        });
-        if (!reserva){
-            throw new BadRequestException('Turno inexistente');
-        }
-
-        this.repository.merge(reserva, dto);
-
-        await this.repository.save(reserva);
-
-
+    async crearReserva(dto: CreateReservaDto): Promise<ListReservasDto> {
+        throw new NotImplementedException();
     }
 
+    async listarReservas(filtros: FiltrosReservasDto): Promise<ListReservasDto[]> {
+        throw new NotImplementedException();
+    }
+
+    async cancelarReserva(id: number): Promise<void> {
+        throw new NotImplementedException();
+    }
+
+    async cambiarEstado(id: number, dto: UpdateEstadoReservaDto): Promise<void> {
+        throw new NotImplementedException();
+    }
+
+    async horariosDisponibles(idMedico: number, fecha: string): Promise<string[]> {
+        throw new NotImplementedException();
+    }
 }
