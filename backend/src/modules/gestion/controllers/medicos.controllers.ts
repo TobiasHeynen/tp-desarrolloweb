@@ -1,12 +1,17 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard.js';
+import { Roles } from '../../auth/guards/roles.decorator.js';
+import { RolesGuard } from '../../auth/guards/roles.guard.js';
 import { HorariosDisponiblesDto } from '../dtos/input/horarios-disponibles.dto.js';
 import { UpdateValorConsultaDto } from '../dtos/input/update-valor-consulta.dto.js';
 import { ListMedicosDto } from '../dtos/output/list-medicos.dto.js';
+import { RolesUsuarios } from '../enums/roles-usuarios.enum.js';
 import { MedicosService } from '../services/medicos.service.js';
 import { ReservasService } from '../services/reservas.service.js';
 
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('medicos')
 export class MedicosController {
 
@@ -24,12 +29,14 @@ export class MedicosController {
 
     // PACIENTE y ADMINISTRADOR: horarios libres de un médico en una fecha (ej: ['08:00', '09:00'])
     @ApiOkResponse({ type: String, isArray: true })
+    @Roles(RolesUsuarios.PACIENTE, RolesUsuarios.ADMINISTRADOR)
     @Get(':id/horarios-disponibles')
     async horariosDisponibles(@Param('id', ParseIntPipe) id: number, @Query() dto: HorariosDisponiblesDto): Promise<string[]> {
         return await this.reservasService.horariosDisponibles(id, dto.fecha);
     }
 
     // ADMINISTRADOR
+    @Roles(RolesUsuarios.ADMINISTRADOR)
     @Patch(':id/valor-consulta')
     async actualizarValorConsulta(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateValorConsultaDto): Promise<void> {
         await this.service.actualizarValorConsulta(id, dto);

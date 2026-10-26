@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '../auth/auth.modules.js';
 import { MedicosController } from './controllers/medicos.controllers.js';
 import { PacientesController } from './controllers/pacientes.controllers.js';
 import { ReservasController } from './controllers/reservas.controllers.js';
@@ -12,7 +13,10 @@ import { ReservasService } from './services/reservas.service.js';
 
 @Module({
     controllers: [ReservasController, MedicosController, PacientesController],
-    imports: [TypeOrmModule.forFeature([Usuario, Medico, Reserva])],
+    imports: [
+        TypeOrmModule.forFeature([Usuario, Medico, Reserva]),
+        AuthModule,
+    ],
     providers: [ReservasService, MedicosService, PacientesService],
     exports: [],
 })
