@@ -1,0 +1,26 @@
+<div class="login">
+  <form class="tarjeta" [formGroup]="formulario" (ngSubmit)="ingresar()" novalidate>
+    <h1>Clínica UNER</h1>
+    <p class="ayuda">Ingresá con tu documento y tu clave.</p>
+
+    <label for="documento">Documento</label>
+    <input id="documento" type="text" inputmode="numeric" autocomplete="username" formControlName="documento" />
+    @if (formulario.controls.documento.touched && formulario.controls.documento.invalid) {
+      <span class="error-campo">Ingresá tu documento.</span>
+    }
+
+    <label for="clave">Clave</label>
+    <input id="clave" type="password" autocomplete="current-password" formControlName="clave" />
+    @if (formulario.controls.clave.touched && formulario.controls.clave.invalid) {
+      <span class="error-campo">Ingresá tu clave.</span>
+    }
+
+    @if (error(); as mensaje) {
+      <p class="alerta error" role="alert">{{ mensaje }}</p>
+    }
+
+    <button type="submit" class="boton" [disabled]="enviando()">
+      {{ enviando() ? 'Ingresando…' : 'Ingresar' }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,18 @@
+<header class="barra">
+  <a class="marca" routerLink="/">Clínica UNER</a>
+
+  <nav class="menu" aria-label="Menú principal">
+    @for (item of menu(); track item.ruta) {
+      <a [routerLink]="item.ruta" routerLinkActive="activo">{{ item.texto }}</a>
+    }
+  </nav>
+
+  <div class="sesion">
+    <span class="rol">{{ nombreDelRol() }}</span>
+    <button type="button" class="boton secundario" (click)="salir()">Salir</button>
+  </div>
+</header>
+
+<main class="contenido">
+  <router-outlet />
+</main>

@@ -1,0 +1,71 @@
+<div class="encabezado">
+  <h1>Mis turnos</h1>
+  <a class="boton" routerLink="/paciente/reservar">Reservar turno</a>
+</div>
+
+@if (mensajeAccion(); as mensaje) {
+  <p class="alerta exito" role="status">{{ mensaje }}</p>
+}
+@if (errorAccion(); as mensaje) {
+  <p class="alerta error" role="alert">{{ mensaje }}</p>
+}
+
+<section class="tarjeta">
+  <div class="filtros">
+    <label for="filtro-estado">Estado</label>
+    <select id="filtro-estado" [value]="filtro()" (change)="cambiarFiltro($any($event.target).value)">
+      <option value="TODOS">Todos</option>
+      @for (estado of estados; track estado) {
+        <option [value]="estado">{{ estado }}</option>
+      }
+    </select>
+  </div>
+
+  @if (reservas().cargando && reservas().datos.length === 0) {
+    <p class="ayuda">Cargando tus turnos…</p>
+  } @else if (reservas().error; as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+    <button type="button" class="boton secundario" (click)="cargar()">Reintentar</button>
+  } @else if (visibles().length === 0) {
+    <p class="ayuda">No tenés turnos para mostrar.</p>
+  } @else {
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha y hora</th>
+            <th>Médico</th>
+            <th>Valor</th>
+            <th>Estado</th>
+            <th><span class="solo-lectores">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (reserva of visibles(); track reserva.id) {
+            <tr>
+              <td>{{ reserva.fechaHora | fechaHoraTurno }}</td>
+              <td>{{ reserva.medico.apellidos }}, {{ reserva.medico.nombres }}</td>
+              <td>{{ reserva.valorConsulta | precio }}</td>
+              <td><span class="estado estado-{{ reserva.estado.toLowerCase() }}">{{ reserva.estado }}</span></td>
+              <td class="acciones">
+                @if (reserva.estado === 'ACTIVO') {
+                  @if (idPorConfirmar() === reserva.id) {
+                    <span class="confirmar">¿Cancelar este turno?</span>
+                    <button type="button" class="boton peligro" [disabled]="idCancelando() === reserva.id" (click)="cancelar(reserva)">
+                      {{ idCancelando() === reserva.id ? 'Cancelando…' : 'Sí, cancelar' }}
+                    </button>
+                    <button type="button" class="boton secundario" [disabled]="idCancelando() === reserva.id" (click)="descartarConfirmacion()">No</button>
+                  } @else if (puedeCancelar(reserva)) {
+                    <button type="button" class="boton secundario" (click)="pedirConfirmacion(reserva.id)">Cancelar</button>
+                  } @else {
+                    <span class="ayuda" title="Los turnos se cancelan hasta las 23:59 del día anterior">No se puede cancelar</span>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

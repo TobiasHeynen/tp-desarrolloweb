@@ -1,0 +1,94 @@
+<h1>Reservar turno</h1>
+
+@if (reservaCreada(); as reserva) {
+  <div class="alerta exito" role="status">
+    <strong>¡Turno reservado!</strong>
+    {{ reserva.fechaHora | fechaHoraTurno }} con {{ reserva.medico.apellidos }}, {{ reserva.medico.nombres }}
+    ({{ reserva.valorConsulta | precio }}).
+    <a routerLink="/paciente/mis-turnos">Ver mis turnos</a>
+  </div>
+}
+
+<section class="tarjeta">
+  <h2><span class="paso">1</span> Elegí el médico</h2>
+
+  @if (medicos().cargando) {
+    <p class="ayuda">Cargando médicos…</p>
+  } @else if (medicos().error; as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+  } @else if (medicos().datos.length === 0) {
+    <p class="ayuda">No hay médicos cargados.</p>
+  } @else {
+    <div class="opciones">
+      @for (medico of medicos().datos; track medico.id) {
+        <button type="button" class="opcion" [class.elegida]="medicoElegido()?.id === medico.id"
+                [attr.aria-pressed]="medicoElegido()?.id === medico.id" (click)="elegirMedico(medico)">
+          <span class="titulo">{{ medico.apellidos }}, {{ medico.nombres }}</span>
+          <span class="detalle">Matrícula {{ medico.matricula }}</span>
+          <span class="precio">{{ medico.valorConsulta | precio }}</span>
+        </button>
+      }
+    </div>
+  }
+</section>
+
+<section class="tarjeta" [class.deshabilitada]="!medicoElegido()">
+  <h2><span class="paso">2</span> Elegí la fecha</h2>
+  <label for="fecha">Se atiende de lunes a viernes, hasta con {{ diasMaximos }} días de anticipación.</label>
+  <input id="fecha" type="date" [min]="fechaMinima" [max]="fechaMaxima"
+         [value]="fechaElegida()" [disabled]="!medicoElegido()"
+         (change)="elegirFecha($any($event.target).value)" />
+
+  @if (esFinDeSemana()) {
+    <p class="alerta aviso">Los sábados y domingos no se atiende. Elegí un día de lunes a viernes.</p>
+  }
+  @if (fechaFueraDeRango()) {
+    <p class="alerta aviso">Esa fecha está fuera del rango permitido (desde hoy hasta {{ fechaMaxima | fechaHoraTurno }}).</p>
+  }
+</section>
+
+<section class="tarjeta" [class.deshabilitada]="!medicoElegido() || fechaElegida() === ''">
+  <h2><span class="paso">3</span> Elegí el horario</h2>
+
+  @if (horarios().cargando) {
+    <p class="ayuda">Buscando horarios…</p>
+  } @else if (horarios().error; as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+  } @else if (!medicoElegido() || fechaElegida() === '' || esFinDeSemana() || fechaFueraDeRango()) {
+    <p class="ayuda">Elegí un médico y una fecha válida para ver los horarios.</p>
+  } @else if (horarios().datos.length === 0) {
+    <p class="ayuda">No quedan horarios disponibles ese día. Probá con otra fecha.</p>
+  } @else {
+    <div class="horarios">
+      @for (hora of horarios().datos; track hora) {
+        <button type="button" class="hora" [class.elegida]="horaElegida() === hora"
+                [attr.aria-pressed]="horaElegida() === hora" (click)="elegirHora(hora)">
+          {{ hora }}
+        </button>
+      }
+    </div>
+  }
+</section>
+
+<section class="tarjeta">
+  <h2><span class="paso">4</span> Confirmá</h2>
+
+  @if (medicoElegido(); as medico) {
+    <dl class="resumen">
+      <dt>Médico</dt><dd>{{ medico.apellidos }}, {{ medico.nombres }}</dd>
+      <dt>Fecha</dt><dd>{{ fechaElegida() ? (fechaElegida() | fechaHoraTurno) : '—' }}</dd>
+      <dt>Horario</dt><dd>{{ horaElegida() ?? '—' }}</dd>
+      <dt>Valor de la consulta</dt><dd class="precio">{{ medico.valorConsulta | precio }}</dd>
+    </dl>
+  } @else {
+    <p class="ayuda">Todavía no elegiste médico.</p>
+  }
+
+  @if (errorReserva(); as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+  }
+
+  <button type="button" class="boton" [disabled]="!puedeConfirmar()" (click)="confirmar()">
+    {{ confirmando() ? 'Reservando…' : 'Confirmar turno' }}
+  </button>
+</section>
