@@ -63,32 +63,32 @@ Nada de esto depende de los demás. Se puede probar con el backend actual, que y
 
 ## Persona 2: Auth, seguridad y endpoints chicos
 
-- [ ] `db/seed.sql` con 1 admin, 2 médicos (con su fila en `medicos`), 3 pacientes y 1 usuario en `BAJA`, todos con la clave hasheada con bcrypt. **Pasarlo pronto**, porque todos lo necesitan para probar.
-- [ ] `AuthService.login`: buscar por `documento`, verificar `estado = ACTIVO`, comparar con `bcrypt.compare` y firmar el JWT con `JWT_SECRET`/`JWT_EXPIRES_IN` desde ConfigService. Ante cualquier error, devolver `401` con un mensaje genérico.
-- [ ] `JwtAuthGuard`, `RolesGuard`, el decorador `@Roles(...)` y el decorador `@UsuarioActual()`, que devuelve el payload del token. **Prioridad alta**, porque la persona 3 los usa.
-- [ ] Aplicar los guards en los 3 controllers según la columna "Rol" del contrato.
-- [ ] `MedicosService`: `listarMedicos` (join con usuario para nombre y apellido) y `actualizarValorConsulta`, que no toca las reservas existentes.
-- [ ] `PacientesService.listarPacientes`: usuarios con rol PACIENTE y estado ACTIVO, sin exponer la clave.
+- [x] `db/seed.sql` con 1 admin, 2 médicos (con su fila en `medicos`), 3 pacientes y 1 usuario en `BAJA`, todos con la clave hasheada con bcrypt. **Pasarlo pronto**, porque todos lo necesitan para probar.
+- [x] `AuthService.login`: buscar por `documento`, verificar `estado = ACTIVO`, comparar con `bcrypt.compare` y firmar el JWT con `JWT_SECRET`/`JWT_EXPIRES_IN` desde ConfigService. Ante cualquier error, devolver `401` con un mensaje genérico.
+- [x] `JwtAuthGuard`, `RolesGuard`, el decorador `@Roles(...)` y el decorador `@UsuarioActual()`, que devuelve el payload del token. **Prioridad alta**, porque la persona 3 los usa.
+- [x] Aplicar los guards en los 3 controllers según la columna "Rol" del contrato.
+- [x] `MedicosService`: `listarMedicos` (join con usuario para nombre y apellido) y `actualizarValorConsulta`, que no toca las reservas existentes.
+- [x] `PacientesService.listarPacientes`: usuarios con rol PACIENTE y estado ACTIVO, sin exponer la clave.
 
 ## Persona 3: Reservas, el núcleo del negocio
 
 Hasta que estén los guards de la persona 2, podés hardcodear un usuario de prueba y después reemplazarlo por `@UsuarioActual()`.
 
-- [ ] `crearReserva`: validar todas las reglas de arriba (día hábil, hora en punto entre 8 y 15, rango de 30 días, médico existente, horario libre para el médico y para el paciente) y congelar `valorConsulta`. Si el que reserva es PACIENTE, `idPaciente` sale del token; si es ADMIN, viene en el body.
-- [ ] `listarReservas`: el PACIENTE ve solo las suyas, el MEDICO solo las suyas, y el ADMIN ve todas y puede aplicar los filtros. El mapeo a `ListReservasDto` se hace sin exponer la clave del paciente.
-- [ ] `cancelarReserva`: aplicar la regla de tiempo según el rol, que el paciente solo pueda cancelar las suyas, y que solo se cancelen reservas `ACTIVO`.
-- [ ] `cambiarEstado`: solo el médico dueño del turno, y solo sobre reservas `ACTIVO`.
-- [ ] `horariosDisponibles`: devolver los slots de 08:00 a 15:00 de esa fecha que no estén ocupados para ese médico, y ninguno si es fin de semana o está fuera del rango permitido.
-- [ ] Ojo con las zonas horarias: la columna es `timestamp` sin zona. Hay que acordar que siempre se guarda la hora local de Argentina y no mezclar con `toISOString()`.
+- [x] `crearReserva`: validar todas las reglas de arriba (día hábil, hora en punto entre 8 y 15, rango de 30 días, médico existente, horario libre para el médico y para el paciente) y congelar `valorConsulta`. Si el que reserva es PACIENTE, `idPaciente` sale del token; si es ADMIN, viene en el body.
+- [x] `listarReservas`: el PACIENTE ve solo las suyas, el MEDICO solo las suyas, y el ADMIN ve todas y puede aplicar los filtros. El mapeo a `ListReservasDto` se hace sin exponer la clave del paciente.
+- [x] `cancelarReserva`: aplicar la regla de tiempo según el rol, que el paciente solo pueda cancelar las suyas, y que solo se cancelen reservas `ACTIVO`.
+- [x] `cambiarEstado`: solo el médico dueño del turno, y solo sobre reservas `ACTIVO`.
+- [x] `horariosDisponibles`: devolver los slots de 08:00 a 15:00 de esa fecha que no estén ocupados para ese médico, y ninguno si es fin de semana o está fuera del rango permitido.
+- [x] Ojo con las zonas horarias: la columna es `timestamp` sin zona. Hay que acordar que siempre se guarda la hora local de Argentina y no mezclar con `toISOString()`.
 
 ## Persona 4: Frontend base + pantallas de paciente
 
-- [ ] Crear el proyecto Angular en `frontend/` con el nombre `frontend` (`ng new frontend`), así el build queda en `frontend/dist/frontend/browser`, que es la ruta que usa nginx.
-- [ ] Agregar Compodoc al frontend: `npm i -D @compodoc/compodoc` y los scripts `"compodoc": "compodoc -p tsconfig.json -d documentation"` y `"compodoc:serve": "compodoc -p tsconfig.json -d documentation -s --port 8082"`. Agregar `documentation` al `.gitignore`.
-- [ ] Crear `proxy.conf.json` con `/api` → `http://localhost:3000`, configurado en `angular.json`. **Todas las llamadas con rutas relativas** (`/api/v1/...`), nunca `http://localhost:3000`.
-- [ ] Login (documento + clave), un `AuthService` que guarde el token, un interceptor que mande el `Authorization: Bearer`, guards de ruta por rol, y un layout con menú según el rol.
-- [ ] **Subir la base pronto**, así la persona 5 trabaja arriba.
-- [ ] Pantallas de paciente: reservar turno (elegir médico, después fecha, después horario disponible, con el precio a la vista), mis turnos, y cancelar.
+- [x] Crear el proyecto Angular en `frontend/` con el nombre `frontend` (`ng new frontend`), así el build queda en `frontend/dist/frontend/browser`, que es la ruta que usa nginx.
+- [x] Agregar Compodoc al frontend: `npm i -D @compodoc/compodoc` y los scripts `"compodoc": "compodoc -p tsconfig.json -d documentation"` y `"compodoc:serve": "compodoc -p tsconfig.json -d documentation -s --port 8082"`. Agregar `documentation` al `.gitignore`.
+- [x] Crear `proxy.conf.json` con `/api` → `http://localhost:3000`, configurado en `angular.json`. **Todas las llamadas con rutas relativas** (`/api/v1/...`), nunca `http://localhost:3000`.
+- [x] Login (documento + clave), un `AuthService` que guarde el token, un interceptor que mande el `Authorization: Bearer`, guards de ruta por rol, y un layout con menú según el rol.
+- [x] **Subir la base pronto**, así la persona 5 trabaja arriba.
+- [x] Pantallas de paciente: reservar turno (elegir médico, después fecha, después horario disponible, con el precio a la vista), mis turnos, y cancelar.
 
 ## Persona 5: Frontend de médico y administrador
 
