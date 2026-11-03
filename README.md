@@ -202,5 +202,3 @@ El detalle de cada endpoint está en Swagger.
 - Se puede reservar con hasta 30 días de anticipación.
 - El valor de la consulta se guarda al reservar y no cambia aunque después se modifique el precio del médico.
 - Solo pueden iniciar sesión los usuarios en estado `ACTIVO`.
-
-El reparto de tareas del grupo está en [TAREAS.md](TAREAS.md).
