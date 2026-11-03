@@ -1,15 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { RolesUsuarios } from '../../gestion/enums/roles-usuarios.enum.js';
-
-export interface JwtPayload {
-    sub: number;
-    rol: RolesUsuarios;
-    idMedico?: number;
-}
+import { PayloadJwt } from '../interfaces/payload-jwt.interface.js';
 
 export const UsuarioActual = createParamDecorator(
-    (_data: unknown, ctx: ExecutionContext): JwtPayload => {
-        const request = ctx.switchToHttp().getRequest<{ user: JwtPayload }>();
+    (_data: unknown, ctx: ExecutionContext): PayloadJwt => {
+        const request = ctx.switchToHttp().getRequest<{ user: PayloadJwt }>();
         return request.user;
     },
 );

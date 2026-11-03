@@ -9,7 +9,7 @@ import { EstadosUsuarios } from '../../gestion/enums/estados-usuarios.enum.js';
 import { RolesUsuarios } from '../../gestion/enums/roles-usuarios.enum.js';
 import { LoginDTO } from '../dtos/input/login.dto.js';
 import { LoginResponseDTO } from '../dtos/output/login-response.dto.js';
-import { JwtPayload } from '../guards/usuario-actual.decorator.js';
+import { PayloadJwt } from '../interfaces/payload-jwt.interface.js';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +34,7 @@ export class AuthService {
             throw new UnauthorizedException('Credenciales inválidas');
         }
 
-        const payload: JwtPayload = {
+        const payload: PayloadJwt = {
             sub: usuario.id,
             rol: usuario.rol,
         };

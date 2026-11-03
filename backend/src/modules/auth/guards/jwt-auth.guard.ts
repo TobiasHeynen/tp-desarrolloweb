@@ -1,8 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { JwtPayload } from './usuario-actual.decorator.js';
+import { PayloadJwt } from '../interfaces/payload-jwt.interface.js';
 
 /**
  * Guard que verifica la presencia y validez del token JWT en el encabezado Authorization.
@@ -10,13 +9,10 @@ import { JwtPayload } from './usuario-actual.decorator.js';
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
 
-    constructor(
-        private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
-    ) {}
+    constructor(private readonly jwtService: JwtService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest<Request & { user?: JwtPayload }>();
+        const request = context.switchToHttp().getRequest<Request & { user?: PayloadJwt }>();
         const token = this.extractTokenFromHeader(request);
 
         if (!token) {
@@ -24,8 +20,8 @@ export class JwtAuthGuard implements CanActivate {
         }
 
         try {
-            const secret = this.configService.get<string>('JWT_SECRET');
-            const payload = await this.jwtService.verifyAsync<JwtPayload>(token, { secret });
+            // Usa el mismo secreto con el que firma el JwtModule (auth.modules.ts)
+            const payload = await this.jwtService.verifyAsync<PayloadJwt>(token);
             request.user = payload;
         } catch {
             throw new UnauthorizedException('Token inválido o expirado');
