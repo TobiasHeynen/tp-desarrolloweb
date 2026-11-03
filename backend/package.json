@@ -10,7 +10,7 @@
     "build": "nest build",
     "deploy": "nest deploy",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "compodoc": "npx compodoc -p tsconfig.json -d documentation -s --port 8081",
+    "compodoc": "compodoc -p tsconfig.json -d documentation",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -20,7 +20,8 @@
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
-    "test:e2e": "vitest run --config ./vitest.config.e2e.ts"
+    "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
+    "compodoc:serve": "compodoc -p tsconfig.json -d documentation -s --port 8081"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -40,6 +41,7 @@
     "typeorm": "^1.1.2"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^2.0.0",
     "@nestjs/cli": "^12.0.0",
     "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
