@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@
 import { Reflector } from '@nestjs/core';
 import { RolesUsuarios } from '../../gestion/enums/roles-usuarios.enum.js';
 import { ROLES_KEY } from './roles.decorator.js';
-import { JwtPayload } from './usuario-actual.decorator.js';
+import { PayloadJwt } from '../interfaces/payload-jwt.interface.js';
 
 /**
  * Guard que valida que el rol del usuario autenticado coincida con los roles permitidos en la ruta.
@@ -22,7 +22,7 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        const request = context.switchToHttp().getRequest<{ user?: JwtPayload }>();
+        const request = context.switchToHttp().getRequest<{ user?: PayloadJwt }>();
         const usuario = request.user;
 
         if (!usuario || !rolesRequeridos.includes(usuario.rol)) {

@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 't
 import { EstadosReservas } from '../enums/estados-reservas.enum.js';
 import { Medico } from './medicos.entity.js';
 import { Usuario } from './usuarios.entity.js';
+import { fechaLocalTransformer } from '../utils/fecha-local.transformer.js';
 
 @Entity({ name: 'reservas' })
 export class Reserva {
@@ -24,8 +25,9 @@ export class Reserva {
     @JoinColumn({ name: 'id_paciente' })
     paciente: Usuario;
 
-    @Column({ name: 'fecha_hora', type: 'timestamp' })
-    fechaHora: Date;
+    // Hora de Argentina como texto 'YYYY-MM-DDTHH:mm:ss' (ver utils/fecha-local.ts)
+    @Column({ name: 'fecha_hora', type: 'timestamp', transformer: fechaLocalTransformer })
+    fechaHora: string;
 
     @Column({ type: 'enum', enum: EstadosReservas, enumName: 'estados_reservas', default: EstadosReservas.ACTIVO })
     estado: EstadosReservas;

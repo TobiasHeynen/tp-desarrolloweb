@@ -58,14 +58,17 @@ psql -U postgres -d clinica -f backend/db/seed.sql
 
 ### Usuarios de prueba
 
-Se cargan con `backend/db/seed.sql`.
+Se cargan con `backend/db/seed.sql`. La clave de todos es `123456`.
 
-| Rol | Documento | Clave |
+| Rol | Documento | Nombre |
 |---|---|---|
-| Administrador | _a completar_ | _a completar_ |
-| Médico | _a completar_ | _a completar_ |
-| Paciente | _a completar_ | _a completar_ |
-| Usuario dado de baja (no puede entrar) | _a completar_ | _a completar_ |
+| Administrador | `10000001` | Laura Gómez |
+| Médico | `20000001` | Carlos Pérez |
+| Médico | `20000002` | María Fernández |
+| Paciente | `30000001` | Juan Martínez |
+| Paciente | `30000002` | Sofía Rodríguez |
+| Paciente | `30000003` | Diego López |
+| Paciente dado de baja (no puede entrar) | `40000001` | Roberto Sánchez |
 
 ## Variables de entorno
 
@@ -199,5 +202,3 @@ El detalle de cada endpoint está en Swagger.
 - Se puede reservar con hasta 30 días de anticipación.
 - El valor de la consulta se guarda al reservar y no cambia aunque después se modifique el precio del médico.
 - Solo pueden iniciar sesión los usuarios en estado `ACTIVO`.
-
-El reparto de tareas del grupo está en [TAREAS.md](TAREAS.md).

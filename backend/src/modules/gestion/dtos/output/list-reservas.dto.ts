@@ -8,8 +8,8 @@ export class ListReservasDto {
     @ApiProperty()
     id: number;
 
-    @ApiProperty()
-    fechaHora: Date;
+    @ApiProperty({ example: '2026-11-03T10:00:00', description: 'Hora de Argentina, sin zona horaria' })
+    fechaHora: string;
 
     @ApiProperty({ enum: EstadosReservas })
     estado: EstadosReservas;
