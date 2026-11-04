@@ -1,0 +1,169 @@
+<div class="encabezado">
+  <h1>Reservar Turno (Administrador)</h1>
+  <button type="button" class="boton secundario" (click)="irATurnos()">Ver turnos</button>
+</div>
+
+@if (errorReserva()) {
+  <div class="alerta error" role="alert">{{ errorReserva() }}</div>
+}
+
+@if (reservaCreada(); as reserva) {
+  <div class="tarjeta alerta exito">
+    <h2>¡Turno reservado con éxito!</h2>
+    <p><strong>Fecha y hora:</strong> {{ reserva.fechaHora | fechaHoraTurno }}</p>
+    <p><strong>Médico:</strong> Dr/a. {{ reserva.medico.apellidos }}, {{ reserva.medico.nombres }}</p>
+    <p><strong>Paciente:</strong> {{ reserva.paciente.apellidos }}, {{ reserva.paciente.nombres }}</p>
+    <p><strong>Valor:</strong> {{ reserva.valorConsulta | precio }}</p>
+    <div class="acciones">
+      <button type="button" class="boton" (click)="resetFormulario()">Reservar otro turno</button>
+      <button type="button" class="boton secundario" (click)="irATurnos()">Ir al listado de turnos</button>
+    </div>
+  </div>
+} @else {
+  <section class="tarjeta">
+    <!-- PACIENTE -->
+    <section class="tarjeta">
+      <h2><span class="paso">1</span> Paciente</h2>
+      @if (pacienteElegido() === null) {
+        <div class="filtros">
+          <input
+            type="text"
+            placeholder="Buscar por nombre, apellido o documento..."
+            [value]="filtroPaciente()"
+            (input)="filtroPaciente.set($any($event.target).value)"
+          >
+        </div>
+
+        @if (pacientes().cargando) {
+          <p class="ayuda">Cargando pacientes…</p>
+        } @else if (pacientes().error; as mensaje) {
+          <p class="alerta error" role="alert">{{ mensaje }}</p>
+        } @else {
+          <div class="tabla-scroll">
+            <table class="tabla">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Paciente</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (paciente of pacientesFiltrados(); track paciente.id) {
+                  <tr>
+                    <td>{{ paciente.documento }}</td>
+                    <td>{{ paciente.apellidos }}, {{ paciente.nombres }}</td>
+                    <td>
+                      <button type="button" class="boton" (click)="elegirPaciente(paciente.id)">Seleccionar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      } @else {
+        <p class="ayuda">
+          Paciente seleccionado: <strong>{{ pacienteNombre() }}</strong>
+          <button type="button" class="boton secundario" (click)="limpiarPaciente()">Cambiar</button>
+        </p>
+      }
+    </section>
+
+    <!-- MÉDICO Y FECHA -->
+    @if (pacienteElegido() !== null) {
+      <section class="tarjeta">
+        <h2><span class="paso">2</span> Médico y Fecha</h2>
+        
+        <div class="grid-2">
+          <div>
+            <h4>Médicos disponibles</h4>
+            @if (medicos().cargando) {
+              <p class="ayuda">Cargando médicos…</p>
+            } @else if (medicos().error; as mensaje) {
+              <p class="alerta error" role="alert">{{ mensaje }}</p>
+            } @else {
+              <ul class="opciones">
+                @for (medico of medicos().datos; track medico.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="opcion"
+                      [class.elegida]="medicoElegido()?.id === medico.id"
+                      (click)="elegirMedico(medico)"
+                    >
+                      Dr/a. {{ medico.apellidos }}, {{ medico.nombres }} ({{ medico.valorConsulta | precio }})
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <div>
+            <h4>Fecha de la consulta</h4>
+            <input
+              type="date"
+              [min]="fechaMinima"
+              [max]="fechaMaxima"
+              [value]="fechaElegida()"
+              (change)="elegirFecha($any($event.target).value)"
+            >
+
+            @if (esFinDeSemana()) {
+              <p class="alerta error">No se atienden turnos los fines de semana.</p>
+            }
+            @if (fechaFueraDeRango()) {
+              <p class="alerta error">Los turnos se pueden reservar con un máximo de {{ diasMaximos }} días de anticipación.</p>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- HORARIO -->
+      @if (medicoElegido() !== null && fechaElegida() !== '' && !esFinDeSemana() && !fechaFueraDeRango()) {
+        <section class="tarjeta">
+          <h2><span class="paso">3</span> Horarios Disponibles</h2>
+
+          @if (horarios().cargando) {
+            <p class="ayuda">Buscando horarios disponibles…</p>
+          } @else if (horarios().error; as mensaje) {
+            <p class="alerta error" role="alert">{{ mensaje }}</p>
+          } @else if (horarios().datos.length === 0) {
+            <p class="ayuda">No hay horarios disponibles para esta fecha con este profesional.</p>
+          } @else {
+            <div class="horarios">
+              @for (hora of horarios().datos; track hora) {
+                <button
+                  type="button"
+                  class="hora"
+                  [class.elegida]="horaElegida() === hora"
+                  (click)="elegirHora(hora)"
+                >
+                  {{ hora }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- CONFIRMACIÓN -->
+      @if (horaElegida() !== null) {
+        <section class="tarjeta">
+          <h2><span class="paso">4</span> Confirmar Reserva</h2>
+          <p>Estás a punto de confirmar un turno para <strong>{{ pacienteNombre() }}</strong> con el/la Dr/a. <strong>{{ medicoElegido()?.apellidos }}</strong> el día <strong>{{ fechaElegida() | fechaHoraTurno }}</strong> a las <strong>{{ horaElegida() }} hs</strong>.
+          
+          <button
+            type="button"
+            class="boton"
+            [disabled]="!puedeConfirmar()"
+            (click)="confirmar()"
+          >
+            {{ confirmando() ? 'Confirmando...' : 'Confirmar Turno' }}
+          </button>
+        </section>
+      }
+    }
+  </section>
+}

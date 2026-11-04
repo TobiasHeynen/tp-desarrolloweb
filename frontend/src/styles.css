@@ -75,3 +75,51 @@ input:focus-visible, select:focus-visible, button:focus-visible { outline: none;
 .estado-activo { color: var(--azul-oscuro); background: var(--azul-claro); }
 .login { min-height: 100vh; display: grid; place-items: center; padding: 1rem; }
 .login .tarjeta { width: 100%; max-width: 400px; padding: 2rem; }
+
+/* MEDICOS Y ADMIN */
+.encabezado { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; margin-bottom: 1rem; }
+.encabezado h1 { margin: 0; }
+
+.ayuda { color: var(--gris); font-size: .92rem; margin: .5rem 0; }
+.precio { font-weight: 700; color: var(--azul); }
+
+/* Filtros */
+.filtros { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .4rem 1.2rem; margin-bottom: 1rem; }
+.filtros .campo { min-width: 190px; }
+.filtros .campo label { margin-top: 0; }
+
+/* Tablas */
+.tabla-scroll { overflow-x: auto; }
+.tabla td.acciones { white-space: nowrap; }
+.tabla .boton { padding: .4rem .8rem; font-size: .88rem; }
+.tabla td.acciones .boton + .boton { margin-left: .4rem; }
+.tabla input[type="number"] { max-width: 9rem; }
+.confirmar { margin-right: .5rem; font-size: .9rem; color: var(--rojo); font-weight: 600; }
+
+/* Estados de un turno */
+.estado-atendido { color: var(--verde); background: #eaf6ee; }
+.estado-ausente { color: var(--amarillo); background: #fef8e7; }
+.estado-cancelado { color: var(--rojo); background: #fdf0ef; }
+
+/* Resumen del turno al reservar */
+.resumen { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.2rem; margin: 0 0 1rem; }
+.resumen dt { color: var(--gris); font-weight: 600; }
+.resumen dd { margin: 0; }
+
+/* Pasos que todavía no se pueden usar */
+.deshabilitada { opacity: .55; }
+
+/* Botones deshabilitados */
+.boton:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Texto solo para lectores*/
+.solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Grillas */
+.grid-2 { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 1.5rem; 
+}
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}

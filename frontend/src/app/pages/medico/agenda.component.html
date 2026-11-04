@@ -1,0 +1,64 @@
+<div class="encabezado">
+  <h1>Mi agenda</h1>
+  <p class="ayuda">Consultá tus turnos y registrá la asistencia de tus pacientes.</p>
+</div>
+
+@if (mensajeAccion(); as mensaje) {
+  <p class="alerta exito" role="status">{{ mensaje }}</p>
+}
+@if (errorAccion(); as mensaje) {
+  <p class="alerta error" role="alert">{{ mensaje }}</p>
+}
+
+<section class="tarjeta" aria-label="Agenda de turnos">
+  <div class="filtros">
+    <label for="filtro-fecha">Fecha de los turnos</label>
+    <input type="date" id="filtro-fecha" [value]="fechaSeleccionada()" (change)="cambiarFecha($any($event.target).value)">
+  </div>
+
+  @if (reservas().cargando && reservas().datos.length === 0) {
+    <p class="ayuda" role="status">Cargando turnos...</p>
+  } @else if (reservas().error; as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+    <button type="button" class="boton secundario" (click)="cargar()">Reintentar</button>
+  } @else if (reservas().datos.length === 0) {
+    <p class="ayuda">No tenés turnos para esta fecha.</p>
+  } @else {
+    @if (reservas().cargando) {
+      <p class="ayuda" role="status">Actualizando agenda...</p>
+    }
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Paciente</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (reserva of reservas().datos; track reserva.id) {
+            <tr>
+              <td>{{ reserva.fechaHora | fechaHoraTurno }}</td>
+              <td>{{ reserva.paciente.apellidos }}, {{ reserva.paciente.nombres }}</td>
+              <td><span class="estado estado-{{ reserva.estado.toLowerCase() }}">{{ reserva.estado }}</span></td>
+              <td class="acciones">
+                @if (reserva.estado === estados.ACTIVO) {
+                  <button type="button" class="boton" [disabled]="idMarcando() !== null" (click)="marcar(reserva, estados.ATENDIDO)">
+                    {{ idMarcando() === reserva.id ? 'Guardando...' : 'Atendido' }}
+                  </button>
+                  <button type="button" class="boton peligro" [disabled]="idMarcando() !== null" (click)="marcar(reserva, estados.AUSENTE)">
+                    {{ idMarcando() === reserva.id ? 'Guardando...' : 'Ausente' }}
+                  </button>
+                } @else {
+                  <span class="ayuda">Sin acciones</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -1,0 +1,76 @@
+<div class="encabezado">
+  <h1>Gestión de Médicos</h1>
+</div>
+
+@if (mensajeAccion()) {
+  <div class="alerta exito" role="status">{{ mensajeAccion() }}</div>
+}
+@if (errorAccion()) {
+  <div class="alerta error" role="alert">{{ errorAccion() }}</div>
+}
+
+<section class="tarjeta">
+  @if (medicos().cargando) {
+    <p class="ayuda" role="status">Cargando médicos…</p>
+  } @else if (medicos().error) {
+    <p class="alerta error" role="alert">No se pudieron cargar los médicos: {{ medicos().error }}</p>
+  } @else if (medicos().datos.length === 0) {
+    <p class="ayuda">No hay médicos registrados.</p>
+  } @else {
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Médico</th>
+            <th>Matrícula</th>
+            <th>Valor Consulta</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (medico of medicos().datos; track medico.id) {
+            <tr>
+              <td>{{ medico.apellidos }}, {{ medico.nombres }}</td>
+              <td>{{ medico.matricula }}</td>
+              <td>
+                @if (idEditando() === medico.id) {
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    [value]="nuevoValor()"
+                    (input)="nuevoValor.set(+$any($event.target).value)"
+                  />
+                } @else {
+                  {{ medico.valorConsulta | precio }}
+                }
+              </td>
+              <td class="acciones">
+                @if (idEditando() === medico.id) {
+                  <button
+                    type="button"
+                    class="boton"
+                    [disabled]="!(nuevoValor() >= 1) || guardando()"
+                    (click)="guardar(medico)"
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    type="button"
+                    class="boton secundario"
+                    [disabled]="guardando()"
+                    (click)="cancelarEdicion()"
+                  >
+                    Cancelar
+                  </button>
+                } @else {
+                  <button type="button" class="boton" (click)="editar(medico)">Editar valor</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
