@@ -13,7 +13,7 @@ Sistema web para reservar turnos de una clínica con médicos clínicos. Hay tre
 - Heynen Tobias
 - Torres Nancy Graciela
 - Troillan Romina Ileana
-- Paula F. Solis
+- Ileana Paula F. Solis
 - Cristian Sambrana
 
 ## Tecnologías

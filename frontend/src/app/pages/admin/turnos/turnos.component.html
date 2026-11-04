@@ -1,0 +1,104 @@
+<div class="encabezado">
+  <h1>Gestión de Turnos</h1>
+  <a class="boton" routerLink="/admin/reservar">Reservar turno</a>
+</div>
+
+@if (mensajeAccion(); as mensaje) {
+  <p class="alerta exito" role="status">{{ mensaje }}</p>
+}
+@if (errorAccion(); as mensaje) {
+  <p class="alerta error" role="alert">{{ mensaje }}</p>
+}
+
+<section class="tarjeta">
+  <div class="filtros">
+    <div class="campo">
+      <label for="filtro-medico">Médico</label>
+      <select id="filtro-medico" [value]="filtroMedico() ?? ''" (change)="cambiarMedico($any($event.target).value)">
+        <option value="">Todos</option>
+        @for (medico of medicos().datos; track medico.id) {
+          <option [value]="medico.id">{{ medico.apellidos }}, {{ medico.nombres }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="filtro-paciente">Paciente</label>
+      <select id="filtro-paciente" [value]="filtroPaciente() ?? ''" (change)="cambiarPaciente($any($event.target).value)">
+        <option value="">Todos</option>
+        @for (paciente of pacientes().datos; track paciente.id) {
+          <option [value]="paciente.id">{{ paciente.apellidos }}, {{ paciente.nombres }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="filtro-estado">Estado</label>
+      <select id="filtro-estado" [value]="filtro()" (change)="cambiarFiltro($any($event.target).value)">
+        <option value="TODOS">Todos</option>
+        @for (estado of estados; track estado) {
+          <option [value]="estado">{{ estado }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="filtro-fecha">Fecha</label>
+      <input type="date" id="filtro-fecha" [value]="filtroFecha()" (change)="cambiarFecha($any($event.target).value)">
+    </div>
+  </div>
+
+  @if (reservas().cargando && reservas().datos.length === 0) {
+    <p class="ayuda">Cargando turnos…</p>
+  } @else if (reservas().error; as mensaje) {
+    <p class="alerta error" role="alert">{{ mensaje }}</p>
+    <button type="button" class="boton secundario" (click)="cargar()">Reintentar</button>
+  } @else if (visibles().length === 0) {
+    <p class="ayuda">No hay turnos para mostrar con los filtros seleccionados.</p>
+  } @else {
+    @if (reservas().cargando) {
+      <p class="ayuda" role="status">Actualizando turnos…</p>
+    }
+
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha y hora</th>
+            <th>Médico</th>
+            <th>Paciente</th>
+            <th>Valor</th>
+            <th>Estado</th>
+            <th><span class="solo-lectores">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (reserva of visibles(); track reserva.id) {
+            <tr>
+              <td>{{ reserva.fechaHora | fechaHoraTurno }}</td>
+              <td>Dr/a. {{ reserva.medico.apellidos }}, {{ reserva.medico.nombres }}</td>
+              <td>{{ reserva.paciente.apellidos }}, {{ reserva.paciente.nombres }}</td>
+              <td>{{ reserva.valorConsulta | precio }}</td>
+              <td>
+                <span class="estado estado-{{ reserva.estado.toLowerCase() }}">{{ reserva.estado }}</span>
+              </td>
+              <td class="acciones">
+                @if (puedeCancelar(reserva)) {
+                  @if (idPorConfirmar() === reserva.id) {
+                    <span class="confirmar">¿Cancelar este turno?</span>
+                    <button type="button" class="boton peligro" [disabled]="idCancelando() === reserva.id" (click)="cancelar(reserva)">
+                      {{ idCancelando() === reserva.id ? 'Cancelando…' : 'Sí, cancelar' }}
+                    </button>
+                    <button type="button" class="boton secundario" [disabled]="idCancelando() === reserva.id" (click)="descartarConfirmacion()">No</button>
+                  } @else {
+                    <button type="button" class="boton secundario" (click)="pedirConfirmacion(reserva.id)">Cancelar</button>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
